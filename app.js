@@ -3,7 +3,7 @@ require("dotenv").config();
 const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
 const REDIRECT_URI = process.env.REDIRECT_URI;
-const SCOPES = process.env.SCOPES;
+let SCOPES = process.env.SCOPES;
 const PORT = 3001;
 
 const express = require("express");
@@ -20,9 +20,9 @@ app.use(express.static("public"));
 app.get("/", (req, res) => {
   const authURL = `https://app.hubspot.com/oauth/authorize?client_id=${encodeURIComponent(
     CLIENT_ID
-  )}&scope=${encodeURIComponent([
-    "crm.objects.contacts.read",
-  ])}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;
+  )}&scope=${encodeURIComponent(SCOPES)}&redirect_uri=${encodeURIComponent(
+    REDIRECT_URI
+  )}`;
 
   res.redirect(authURL);
 });
@@ -49,7 +49,7 @@ app.get("/oauth-callback", async (req, res) => {
         }
       );
 
-      res.send(response.data); // Sends the tokens as response
+      res.send(response.data.access_token); // Sends the tokens as response
     } catch (error) {
       console.error("Error:", error.response.data); // More detailed error logging
       res.status(500).send("Failed to retrieve access token");
