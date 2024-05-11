@@ -10,25 +10,56 @@ const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
 const axios = require("axios");
+const Cache = require("node-cache");
+const session = require("express-session");
 
 const app = express();
+
+let refreshToken;
+const tokenCache = new Cache();
 
 app.use(express.json());
 app.use(cors());
 app.use(express.static("public"));
 
-app.get("/", (req, res) => {
-  const authURL = `https://app.hubspot.com/oauth/authorize?client_id=${encodeURIComponent(
-    CLIENT_ID
-  )}&scope=${encodeURIComponent(SCOPES)}&redirect_uri=${encodeURIComponent(
-    REDIRECT_URI
-  )}`;
+app.use(
+  session({
+    secret: Math.random().toString(36).substring(2),
+    resave: false,
+    saveUninitialized: true,
+  })
+);
 
-  res.redirect(authURL);
+app.get("/", async (req, res) => {
+  if (tokenCache.get(req.sessionID)) {
+    try {
+      const response = await axios.get(
+        `https://api.hubapi.com/crm/v3/objects/emails`,
+        {
+          headers: {
+            Authorization: `Bearer ${tokenCache.get(req.sessionID)}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log(response.data);
+      res.send(response.data);
+    } catch (error) {
+      console.error("Error:", error.response ? error.response.data : error);
+    }
+  } else {
+    const authURL = `https://app.hubspot.com/oauth/authorize?client_id=${encodeURIComponent(
+      CLIENT_ID
+    )}&scope=${encodeURIComponent(SCOPES)}&redirect_uri=${encodeURIComponent(
+      REDIRECT_URI
+    )}`;
+    res.redirect(authURL);
+  }
 });
 
 // Callback
 app.get("/oauth-callback", async (req, res) => {
+  console.log(req.query.code);
   if (req.query.code) {
     const params = new URLSearchParams({
       grant_type: "authorization_code",
@@ -49,9 +80,20 @@ app.get("/oauth-callback", async (req, res) => {
         }
       );
 
-      res.send(response.data.access_token); // Sends the tokens as response
+      tokens = response.data;
+
+      accessToken = tokens.access_token;
+      refreshToken = tokens.refresh_token;
+
+      tokenCache.set(
+        req.sessionID,
+        accessToken,
+        Math.round(tokens.expires_in * 0.75)
+      );
+
+      res.redirect("/");
     } catch (error) {
-      console.error("Error:", error.response.data); // More detailed error logging
+      //   console.error("Error:", error.response); // More detailed error logging
       res.status(500).send("Failed to retrieve access token");
     }
   }
