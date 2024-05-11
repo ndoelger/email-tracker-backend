@@ -10,51 +10,29 @@ const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
 const axios = require("axios");
+const Cache = require("node-cache");
+const session = require("express-session");
 
 const app = express();
+
+let refreshToken;
+const tokenCache = new Cache();
+
+const userRouter = require("./user/userRouter");
 
 app.use(express.json());
 app.use(cors());
 app.use(express.static("public"));
 
-app.get("/", (req, res) => {
-  const authURL = `https://app.hubspot.com/oauth/authorize?client_id=${encodeURIComponent(
-    CLIENT_ID
-  )}&scope=${encodeURIComponent(SCOPES)}&redirect_uri=${encodeURIComponent(
-    REDIRECT_URI
-  )}`;
+// app.use(
+//   session({
+//     secret: Math.random().toString(36).substring(2),
+//     resave: false,
+//     saveUninitialized: true,
+//   })
+// );
 
-  res.redirect(authURL);
-});
-
-// Callback
-app.get("/oauth-callback", async (req, res) => {
-  if (req.query.code) {
-    const params = new URLSearchParams({
-      grant_type: "authorization_code",
-      client_id: CLIENT_ID,
-      client_secret: CLIENT_SECRET,
-      redirect_uri: REDIRECT_URI,
-      code: req.query.code,
-    });
-
-    try {
-      const response = await axios.post(
-        "https://api.hubapi.com/oauth/v1/token",
-        params.toString(), // Converts the parameters to URL-encoded string
-        {
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-        }
-      );
-
-      res.send(response.data.access_token); // Sends the tokens as response
-    } catch (error) {
-      console.error("Error:", error.response.data); // More detailed error logging
-      res.status(500).send("Failed to retrieve access token");
-    }
-  }
-});
+// app.use('/')
+app.use("/user", userRouter);
 
 app.listen(PORT, () => console.log(`Listening on PORT:${PORT}`));
