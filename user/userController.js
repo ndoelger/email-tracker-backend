@@ -25,13 +25,7 @@ const exchangeForTokens = async (id, form) => {
     refreshToken = tokens.refresh_token;
     expires_in = tokens.expires_in;
 
-
-
-    tokenCache.set(
-      id,
-      accessToken,
-      Math.round(tokens.expires_in * 0.75)
-    );
+    tokenCache.set(id, accessToken, Math.round(tokens.expires_in * 0.75));
 
     return tokens;
   } catch (error) {
@@ -51,22 +45,16 @@ const refreshAccessToken = async (userId) => {
 };
 
 const getAccessToken = async (userId) => {
-  // If the access token has expired, retrieve
-  // a new one using the refresh token
-  if (!accessTokenCache.get(userId)) {
-    console.log("Refreshing expired access token");
-    await refreshAccessToken(userId);
-  }
   return tokenCache.get(userId);
 };
 
-const isAuthorized = (userId) => {
-  return refreshTokenStore[userId] ? true : false;
-};
+// const isAuthorized = (userId) => {
+//   return refreshTokenStore[userId] ? true : false;
+// };
 
 module.exports = {
   getAccessToken,
   exchangeForTokens,
   refreshAccessToken,
-  isAuthorized,
+  // isAuthorized,
 };

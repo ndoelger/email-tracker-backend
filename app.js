@@ -18,7 +18,6 @@ let refreshToken = {};
 
 const tokenCache = require("./cache");
 const {
-  getAuthorization,
   getAccessToken,
   exchangeForTokens,
 } = require("./user/userController");
@@ -57,14 +56,12 @@ app.get("/callback", async (req, res) => {
 
   const tokens = await exchangeForTokens(req.sessionID, params);
   refreshToken[req.sessionID] = tokens.refresh_token;
-  console.log(refreshToken);
   // Once the tokens have been retrieved, use them to make a query
   // to the HubSpot API
   res.redirect(`/`);
 });
 
 app.get("/", async (req, res) => {
-  console.log(refreshToken);
   if (refreshToken[req.sessionID]) {
     res.redirect("/dashboard");
   } else {
@@ -72,9 +69,8 @@ app.get("/", async (req, res) => {
   }
 });
 
-app.get("/contacts", async (req, res) => {
+app.get("/dashboard", async (req, res) => {
   const accessToken = await getAccessToken(req.sessionID);
-  console.log(accessToken);
   try {
     const response = await axios.get(
       `https://api.hubapi.com/crm/v3/objects/contacts/?limit=10&properties=email,firstname,lastname,jobtitle,company`,
