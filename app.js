@@ -10,13 +10,13 @@ const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
 const axios = require("axios");
-const Cache = require("node-cache");
 const session = require("express-session");
 
 const app = express();
 
 let refreshToken;
-const tokenCache = new Cache();
+
+const tokenCache = require("./cache");
 
 const userRouter = require("./user/userRouter");
 
@@ -24,15 +24,15 @@ app.use(express.json());
 app.use(cors());
 app.use(express.static("public"));
 
-// app.use(
-//   session({
-//     secret: Math.random().toString(36).substring(2),
-//     resave: false,
-//     saveUninitialized: true,
-//   })
-// );
+app.use(
+  session({
+    secret: Math.random().toString(36).substring(2),
+    resave: false,
+    saveUninitialized: true,
+  })
+);
 
-// app.use('/')
+// app.get('/')
 app.use("/user", userRouter);
 
 app.listen(PORT, () => console.log(`Listening on PORT:${PORT}`));

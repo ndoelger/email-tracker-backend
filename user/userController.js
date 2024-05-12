@@ -1,5 +1,5 @@
 require("dotenv").config();
-const axios = require("axios")
+const axios = require("axios");
 
 const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
