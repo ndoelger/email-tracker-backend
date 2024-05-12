@@ -17,10 +17,8 @@ const app = express();
 let refreshToken = {};
 
 const tokenCache = require("./cache");
-const {
-  getAccessToken,
-  exchangeForTokens,
-} = require("./user/userController");
+
+const { getAccessToken, exchangeForTokens } = require("./user/userController");
 
 app.use(express.json());
 app.use(cors());
@@ -63,7 +61,7 @@ app.get("/callback", async (req, res) => {
 
 app.get("/", async (req, res) => {
   if (refreshToken[req.sessionID]) {
-    res.redirect("/dashboard");
+    res.redirect("http://localhost:3000/");
   } else {
     res.redirect("/login");
   }
