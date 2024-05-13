@@ -1,5 +1,6 @@
 const axios = require("axios");
 const tokenCache = require("../cache");
+const prisma = require("../prisma/prismaClient");
 
 const getEmails = async (req, res) => {
   const accessToken = tokenCache.get("accessToken");
@@ -16,14 +17,21 @@ const getEmails = async (req, res) => {
     const emails = response.data.results.map((email) => {
       console.log(email);
       return {
-        id: email.id,
+        id: parseInt(email.id),
         subject: email.subject,
         preview: email.content.widgets.preview_text.body.value,
-        email: email.name,
-        // createdAt: dateCoverter(contact.createdAt),
+        title: email.name,
       };
     });
-    // if (response.data.paging) contacts.after = response.data.paging.next.after;
+
+    for (const email of emails) {
+      await prisma.email.upsert({
+        where: { id: email.id },
+        update: email,
+        create: email,
+      });
+    }
+
     res.json(emails);
   } catch (error) {
     console.error("Error:", error.response ? error.response.data : error);

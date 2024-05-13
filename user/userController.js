@@ -1,6 +1,7 @@
 require("dotenv").config();
 const axios = require("axios");
 const tokenCache = require("../cache");
+const prisma = require("../prisma/prismaClient");
 
 const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
@@ -53,7 +54,20 @@ const exchangeForTokens = async (form) => {
       "accessToken",
       accessToken,
       Math.round(tokens.expires_in * 0.75)
-    ); // do you know if this works?
+    );
+
+    await prisma.user.upsert({
+      where: {
+        refresh_token: refreshToken, // This is now a valid unique identifier
+      },
+      update: {
+        access_token: accessToken,
+      },
+      create: {
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      },
+    });
 
     return tokens;
   } catch (error) {
