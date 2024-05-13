@@ -47,6 +47,7 @@ const exchangeForTokens = async (form) => {
     tokens = response.data;
 
     accessToken = tokens.access_token;
+    console.log(accessToken)
     refreshToken = tokens.refresh_token;
     expires_in = tokens.expires_in;
 
