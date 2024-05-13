@@ -74,7 +74,9 @@ const addEmail = async (req, res) => {
 
     console.log(response);
 
-    prisma.email.create({});
+    await prisma.email.create({
+      data: emailData,
+    });
 
     res.json(response.data);
   } catch (error) {
@@ -94,6 +96,13 @@ const deleteEmail = async (req, res) => {
         },
       }
     );
+
+    await prisma.email.delete({
+      where: {
+        id: req.params.id,
+      },
+    });
+
     res.json(response.data);
   } catch (error) {
     console.error("Error:", error.response ? error.response.data : error);
