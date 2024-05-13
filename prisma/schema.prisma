@@ -19,7 +19,7 @@ model Email {
   id           BigInt    @id
   subject      String
   preview      String
-  title        String
+  name        String
 }
 
 model User {
