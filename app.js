@@ -64,7 +64,7 @@ app.get("/callback", async (req, res) => {
   // Once the tokens have been retrieved, use them to make a query
   // to the HubSpot API
   // res.json(tokens.access_token);
-  res.redirect("http://localhost:3000/done");
+  res.redirect("http://localhost:3000/dashboard");
 });
 
 app.get("/", async (req, res) => {
@@ -80,7 +80,7 @@ app.get("/dashboard", async (req, res) => {
   const accessToken = tokenCache.get("accessToken");
   try {
     const response = await axios.get(
-      `https://api.hubapi.com/crm/v3/objects/contacts/?properties=email,firstname,lastname,jobtitle,company`,
+      `https://api.hubapi.com/marketing/v3/emails`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -88,19 +88,18 @@ app.get("/dashboard", async (req, res) => {
         },
       }
     );
-    const contacts = response.data.results.map((contact) => {
+    const emails = response.data.results.map((email) => {
+      console.log(email)
       return {
-        id: contact.id,
-        firstname: contact.properties.firstname, // Assuming 'firstname' is correctly populated
-        lastname: contact.properties.lastname, // Assuming 'firstname' is correctly populated
-        email: contact.properties.email,
+        id: email.id,
+        subject: email.subject,
+        preview: email.content.widgets.preview_text.body.value,
+        email: email.name,
         // createdAt: dateCoverter(contact.createdAt),
-        company: contact.properties.company,
-        jobtitle: contact.properties.jobtitle,
       };
     });
     // if (response.data.paging) contacts.after = response.data.paging.next.after;
-    res.json(contacts);
+    res.json(emails);
   } catch (error) {
     console.error("Error:", error.response ? error.response.data : error);
     res.status(500).json({ error: "Failed to fetch contacts" }); // Send error response  }
