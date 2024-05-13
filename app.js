@@ -18,6 +18,7 @@ let refreshToken = {};
 
 const tokenCache = require("./cache");
 
+const userRouter = require("./user/userRouter")
 const { getAccessToken, exchangeForTokens } = require("./user/userController");
 
 app.use(express.json());
@@ -33,39 +34,11 @@ app.use(
   })
 );
 
-app.get("/login", (req, res) => {
-  console.log("Hey");
-  const authUrl =
-    `https://app.hubspot.com/oauth/authorize?` +
-    `client_id=${encodeURIComponent(CLIENT_ID)}&` +
-    `scope=${encodeURIComponent(SCOPES)}&` +
-    `redirect_uri=${encodeURIComponent(REDIRECT_URI)}`; // Send authUrl back to the frontend
+app.use("/login", userRouter)
 
-  res.json({ authUrl });
-});
 
-app.get("/callback", async (req, res) => {
-  console.log(
-    "HUBSPOT GAVE ME BACK MY TOKEN, I AM HANDLING IT NOW IN THE CALLBACK"
-  );
 
-  const params = new URLSearchParams({
-    grant_type: "authorization_code",
-    client_id: CLIENT_ID,
-    client_secret: CLIENT_SECRET,
-    redirect_uri: REDIRECT_URI,
-    code: req.query.code,
-  });
 
-  console.log(req.params);
-
-  const tokens = await exchangeForTokens(req.sessionID, params);
-  // refreshToken[req.sessionID] = tokens.refresh_token;
-  // Once the tokens have been retrieved, use them to make a query
-  // to the HubSpot API
-  // res.json(tokens.access_token);
-  res.redirect("http://localhost:3000/dashboard");
-});
 
 app.get("/", async (req, res) => {
   // if (refreshToken[req.sessionID]) {
