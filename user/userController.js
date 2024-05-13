@@ -7,7 +7,31 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
 const REDIRECT_URI = process.env.REDIRECT_URI;
 let SCOPES = process.env.SCOPES;
 
-const exchangeForTokens = async (id, form) => {
+const getUrl = (req, res) => {
+  const authUrl =
+    `https://app.hubspot.com/oauth/authorize?` +
+    `client_id=${encodeURIComponent(CLIENT_ID)}&` +
+    `scope=${encodeURIComponent(SCOPES)}&` +
+    `redirect_uri=${encodeURIComponent(REDIRECT_URI)}`; // Send authUrl back to the frontend
+
+  res.json({ authUrl });
+};
+
+const getAccessToken = async (req, res) => {
+  const params = new URLSearchParams({
+    grant_type: "authorization_code",
+    client_id: CLIENT_ID,
+    client_secret: CLIENT_SECRET,
+    redirect_uri: REDIRECT_URI,
+    code: req.query.code,
+  });
+
+  const tokens = await exchangeForTokens(params);
+
+  res.redirect("http://localhost:3000/dashboard");
+};
+
+const exchangeForTokens = async (form) => {
   try {
     const response = await axios.post(
       "https://api.hubapi.com/oauth/v1/token",
@@ -48,15 +72,12 @@ const exchangeForTokens = async (id, form) => {
 //   return await exchangeForTokens(userId, refreshTokenProof);
 // };
 
-const getAccessToken = async (userId) => {
-  return tokenCache.get(userId);
-};
-
 // const isAuthorized = (userId) => {
 //   return refreshTokenStore[userId] ? true : false;
 // };
 
 module.exports = {
+  getUrl,
   getAccessToken,
   exchangeForTokens,
   // refreshAccessToken,
