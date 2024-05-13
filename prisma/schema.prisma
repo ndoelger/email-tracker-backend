@@ -13,8 +13,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id Int @id @default(autoincrement())
-  refresh_token String
-  access_token String
+
+
+model Email {
+  id           Int    @id @default(autoincrement())
+  subject      String
+  preview      String
+  title        String
 }
