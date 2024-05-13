@@ -9,7 +9,7 @@ const getEmails = async (req, res) => {
       `https://api.hubapi.com/marketing/v3/emails`,
       {
         headers: {
-          Authorization: `Bearer CJHNvZ33MRIHAgGAQAAAARil0PcVIMzO2x8olK3KATIUi-CDp5zH8e9c-EYk6bS-aH8ZXkE6UAAgAEH_BwAAAACAAABgeMAkgAAAIAAAAAQAADgAAADAw_8BAQAAAIAHAAAAAAAQAgAAAAAAAAAAAAACAAi4AgAAAAAAAAAAAAAAAAAAAABAQhR2KM9ZHhSFWPbhK8nwpoL7-eeS3UoDbmExUgBaAGAA`,
+          Authorization: `Bearer CI6BrZ73MRIHAgGAQAAAARil0PcVIMzO2x8olK3KATIUsNBtg4xK37QU2QKE5TDXy02Rfw86UAAgAEH_BwAAAACAAABgeMAkgAAAIAAAAAQAADgAAADAw_8BAQAAAIAHAAAAAAAQAgAAAAAAAAAAAAACAAi4AgAAAAAAAAAAAAAAAAAAAABAQhRcRdTWfuGIDEEl5w-OuxHtQjwh9UoDbmExUgBaAGAA`,
           "Content-Type": "application/json",
         },
       }
@@ -37,32 +37,44 @@ const getEmails = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch contacts" }); // Send error response  }
   }
 };
+
 const addEmail = async (req, res) => {
   const accessToken = tokenCache.get("accessToken");
-  console.log(req.body)
+  console.log(req.body);
   try {
     const response = await axios.post(
       `https://api.hubapi.com/marketing/v3/emails`,
       {
-        "content":{
-            "widgets": {
-                "preview_text": {
-                    "body": {
-                        "value": req.body.properties.preview
-                    }
-                }
-            }
+        content: {
+          widgets: {
+            preview_text: {
+              body: {
+                value: req.body.properties.preview,
+              },
+            },
+          },
         },
-        "name": req.body.properties.name,
-        "subject": req.body.properties.subject
-    },
+        name: req.body.properties.name,
+        subject: req.body.properties.subject,
+      },
       {
         headers: {
-          Authorization: `Bearer CJHNvZ33MRIHAgGAQAAAARil0PcVIMzO2x8olK3KATIUi-CDp5zH8e9c-EYk6bS-aH8ZXkE6UAAgAEH_BwAAAACAAABgeMAkgAAAIAAAAAQAADgAAADAw_8BAQAAAIAHAAAAAAAQAgAAAAAAAAAAAAACAAi4AgAAAAAAAAAAAAAAAAAAAABAQhR2KM9ZHhSFWPbhK8nwpoL7-eeS3UoDbmExUgBaAGAA`,
+          Authorization: `Bearer CI6BrZ73MRIHAgGAQAAAARil0PcVIMzO2x8olK3KATIUsNBtg4xK37QU2QKE5TDXy02Rfw86UAAgAEH_BwAAAACAAABgeMAkgAAAIAAAAAQAADgAAADAw_8BAQAAAIAHAAAAAAAQAgAAAAAAAAAAAAACAAi4AgAAAAAAAAAAAAAAAAAAAABAQhRcRdTWfuGIDEEl5w-OuxHtQjwh9UoDbmExUgBaAGAA`,
           "Content-Type": "application/json",
         },
       }
     );
+
+    const emailData = {
+      name: response.data.name,
+      subject: response.data.subject,
+      preview: response.data.preview,
+      id: response.data.id,
+    };
+
+    console.log(response);
+
+    prisma.email.create({});
 
     res.json(response.data);
   } catch (error) {
