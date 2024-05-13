@@ -34,16 +34,21 @@ app.use(
 );
 
 app.get("/login", (req, res) => {
+  console.log("Hey");
   const authUrl =
-    "https://app.hubspot.com/oauth/authorize" +
-    `?client_id=${encodeURIComponent(CLIENT_ID)}` + // app's client ID
-    `&scope=${encodeURIComponent(SCOPES)}` + // scopes being requested by the app
-    `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`; // where to send the user after the consent page
+    `https://app.hubspot.com/oauth/authorize?` +
+    `client_id=${encodeURIComponent(CLIENT_ID)}&` +
+    `scope=${encodeURIComponent(SCOPES)}&` +
+    `redirect_uri=${encodeURIComponent(REDIRECT_URI)}`; // Send authUrl back to the frontend
 
-  res.redirect(authUrl);
+  res.json({ authUrl });
 });
 
 app.get("/callback", async (req, res) => {
+  console.log(
+    "HUBSPOT GAVE ME BACK MY TOKEN, I AM HANDLING IT NOW IN THE CALLBACK"
+  );
+
   const params = new URLSearchParams({
     grant_type: "authorization_code",
     client_id: CLIENT_ID,
@@ -52,26 +57,30 @@ app.get("/callback", async (req, res) => {
     code: req.query.code,
   });
 
+  console.log(req.params);
+
   const tokens = await exchangeForTokens(req.sessionID, params);
-  refreshToken[req.sessionID] = tokens.refresh_token;
+  // refreshToken[req.sessionID] = tokens.refresh_token;
   // Once the tokens have been retrieved, use them to make a query
   // to the HubSpot API
-  res.redirect(`/`);
+  // res.json(tokens.access_token);
+  res.redirect("http://localhost:3000/done");
 });
 
 app.get("/", async (req, res) => {
-  if (refreshToken[req.sessionID]) {
-    res.redirect("http://localhost:3000/");
-  } else {
-    res.redirect("/login");
-  }
+  // if (refreshToken[req.sessionID]) {
+  //   res.redirect("http://localhost:3000/dashboard");
+  // } else {
+  console.log("hey");
+  res.redirect("/login");
+  // }
 });
 
 app.get("/dashboard", async (req, res) => {
-  const accessToken = await getAccessToken(req.sessionID);
+  const accessToken = tokenCache.get("accessToken");
   try {
     const response = await axios.get(
-      `https://api.hubapi.com/crm/v3/objects/contacts/?limit=10&properties=email,firstname,lastname,jobtitle,company`,
+      `https://api.hubapi.com/crm/v3/objects/contacts/?properties=email,firstname,lastname,jobtitle,company`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -82,20 +91,19 @@ app.get("/dashboard", async (req, res) => {
     const contacts = response.data.results.map((contact) => {
       return {
         id: contact.id,
-        firstname: contact.properties.firstname || "N/A", // Safe access
-        lastname: contact.properties.lastname || "N/A", // Safe access
-        email: contact.properties.email || "N/A",
+        firstname: contact.properties.firstname, // Assuming 'firstname' is correctly populated
+        lastname: contact.properties.lastname, // Assuming 'firstname' is correctly populated
+        email: contact.properties.email,
         // createdAt: dateCoverter(contact.createdAt),
-        company: contact.properties.company || "N/A",
-        jobtitle: contact.properties.jobtitle || "N/A",
+        company: contact.properties.company,
+        jobtitle: contact.properties.jobtitle,
       };
     });
-    if (response.data.paging) contacts.after = response.data.paging.next.after;
-
-    res.json(contacts); // Send contacts array as JSON response
+    // if (response.data.paging) contacts.after = response.data.paging.next.after;
+    res.json(contacts);
   } catch (error) {
     console.error("Error:", error.response ? error.response.data : error);
-    res.status(500).json({ error: "Failed to fetch contacts" }); // Send error response
+    res.status(500).json({ error: "Failed to fetch contacts" }); // Send error response  }
   }
 });
 
