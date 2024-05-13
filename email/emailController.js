@@ -9,7 +9,7 @@ const getEmails = async (req, res) => {
       `https://api.hubapi.com/marketing/v3/emails`,
       {
         headers: {
-          Authorization: `Bearer CKiClp_3MRIHAgGAQAAAARil0PcVIMzO2x8olK3KATIUPQZVIKIPf3XZ_TlrG82qMiYY37g6UAAgAEH_BwAAAACAAABgeMAkgAAAIAAAAAQAADgAAADAw_8BAQAAAIAHAAAAAAAQAgAAAAAAAAAAAAACAAi4AgAAAAAAAAAAAAAAAAAAAABAQhQFcGIEAs9BltIspN6hVH5rmgUKf0oDbmExUgBaAGAA`,
+          Authorization: `Bearer COjR_aH3MRIHAgGAQAAAARil0PcVIMzO2x8olK3KATIUj5kJmRf5BtaKs76-_q7LpSYELPc6UAAgAEH_BwAAAACAAABgeMAkgAAAIAAAAAQAADgAAADAw_8BAQAAAIAHAAAAAAAQAgAAAAAAAAAAAAACAAi4AgAAAAAAAAAAAAAAAAAAAABAQhSSZ5FuMNgwLwsN3ocIpWz5nAL2fkoDbmExUgBaAGAA`,
           "Content-Type": "application/json",
         },
       }
@@ -40,8 +40,8 @@ const getEmails = async (req, res) => {
 
 const addEmail = async (req, res) => {
   const accessToken = tokenCache.get("accessToken");
-  console.log(req.body);
   try {
+    console.log(req.body.payload.preview);
     const response = await axios.post(
       `https://api.hubapi.com/marketing/v3/emails`,
       {
@@ -59,20 +59,20 @@ const addEmail = async (req, res) => {
       },
       {
         headers: {
-          Authorization: `Bearer CKiClp_3MRIHAgGAQAAAARil0PcVIMzO2x8olK3KATIUPQZVIKIPf3XZ_TlrG82qMiYY37g6UAAgAEH_BwAAAACAAABgeMAkgAAAIAAAAAQAADgAAADAw_8BAQAAAIAHAAAAAAAQAgAAAAAAAAAAAAACAAi4AgAAAAAAAAAAAAAAAAAAAABAQhQFcGIEAs9BltIspN6hVH5rmgUKf0oDbmExUgBaAGAA`,
+          Authorization: `Bearer COjR_aH3MRIHAgGAQAAAARil0PcVIMzO2x8olK3KATIUj5kJmRf5BtaKs76-_q7LpSYELPc6UAAgAEH_BwAAAACAAABgeMAkgAAAIAAAAAQAADgAAADAw_8BAQAAAIAHAAAAAAAQAgAAAAAAAAAAAAACAAi4AgAAAAAAAAAAAAAAAAAAAABAQhSSZ5FuMNgwLwsN3ocIpWz5nAL2fkoDbmExUgBaAGAA`,
           "Content-Type": "application/json",
         },
       }
     );
 
+    console.log(response.data);
+
     const emailData = {
       name: response.data.name,
       subject: response.data.subject,
-      preview: response.data.preview,
+      preview: response.data.content.widgets.preview_text.body.value,
       id: response.data.id,
     };
-
-    console.log(response);
 
     await prisma.email.create({
       data: emailData,
@@ -91,7 +91,7 @@ const deleteEmail = async (req, res) => {
       `https://api.hubapi.com/marketing/v3/emails/${req.params.id}`,
       {
         headers: {
-          Authorization: `Bearer CKiClp_3MRIHAgGAQAAAARil0PcVIMzO2x8olK3KATIUPQZVIKIPf3XZ_TlrG82qMiYY37g6UAAgAEH_BwAAAACAAABgeMAkgAAAIAAAAAQAADgAAADAw_8BAQAAAIAHAAAAAAAQAgAAAAAAAAAAAAACAAi4AgAAAAAAAAAAAAAAAAAAAABAQhQFcGIEAs9BltIspN6hVH5rmgUKf0oDbmExUgBaAGAA`,
+          Authorization: `Bearer COjR_aH3MRIHAgGAQAAAARil0PcVIMzO2x8olK3KATIUj5kJmRf5BtaKs76-_q7LpSYELPc6UAAgAEH_BwAAAACAAABgeMAkgAAAIAAAAAQAADgAAADAw_8BAQAAAIAHAAAAAAAQAgAAAAAAAAAAAAACAAi4AgAAAAAAAAAAAAAAAAAAAABAQhSSZ5FuMNgwLwsN3ocIpWz5nAL2fkoDbmExUgBaAGAA`,
           "Content-Type": "application/json",
         },
       }
