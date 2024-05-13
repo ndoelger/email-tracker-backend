@@ -9,7 +9,7 @@ const getEmails = async (req, res) => {
       `https://api.hubapi.com/marketing/v3/emails`,
       {
         headers: {
-          Authorization: `Bearer CI6BrZ73MRIHAgGAQAAAARil0PcVIMzO2x8olK3KATIUsNBtg4xK37QU2QKE5TDXy02Rfw86UAAgAEH_BwAAAACAAABgeMAkgAAAIAAAAAQAADgAAADAw_8BAQAAAIAHAAAAAAAQAgAAAAAAAAAAAAACAAi4AgAAAAAAAAAAAAAAAAAAAABAQhRcRdTWfuGIDEEl5w-OuxHtQjwh9UoDbmExUgBaAGAA`,
+          Authorization: `Bearer CKiClp_3MRIHAgGAQAAAARil0PcVIMzO2x8olK3KATIUPQZVIKIPf3XZ_TlrG82qMiYY37g6UAAgAEH_BwAAAACAAABgeMAkgAAAIAAAAAQAADgAAADAw_8BAQAAAIAHAAAAAAAQAgAAAAAAAAAAAAACAAi4AgAAAAAAAAAAAAAAAAAAAABAQhQFcGIEAs9BltIspN6hVH5rmgUKf0oDbmExUgBaAGAA`,
           "Content-Type": "application/json",
         },
       }
@@ -49,17 +49,17 @@ const addEmail = async (req, res) => {
           widgets: {
             preview_text: {
               body: {
-                value: req.body.properties.preview,
+                value: req.body.payload.preview,
               },
             },
           },
         },
-        name: req.body.properties.name,
-        subject: req.body.properties.subject,
+        name: req.body.payload.name,
+        subject: req.body.payload.subject,
       },
       {
         headers: {
-          Authorization: `Bearer CI6BrZ73MRIHAgGAQAAAARil0PcVIMzO2x8olK3KATIUsNBtg4xK37QU2QKE5TDXy02Rfw86UAAgAEH_BwAAAACAAABgeMAkgAAAIAAAAAQAADgAAADAw_8BAQAAAIAHAAAAAAAQAgAAAAAAAAAAAAACAAi4AgAAAAAAAAAAAAAAAAAAAABAQhRcRdTWfuGIDEEl5w-OuxHtQjwh9UoDbmExUgBaAGAA`,
+          Authorization: `Bearer CKiClp_3MRIHAgGAQAAAARil0PcVIMzO2x8olK3KATIUPQZVIKIPf3XZ_TlrG82qMiYY37g6UAAgAEH_BwAAAACAAABgeMAkgAAAIAAAAAQAADgAAADAw_8BAQAAAIAHAAAAAAAQAgAAAAAAAAAAAAACAAi4AgAAAAAAAAAAAAAAAAAAAABAQhQFcGIEAs9BltIspN6hVH5rmgUKf0oDbmExUgBaAGAA`,
           "Content-Type": "application/json",
         },
       }
@@ -74,7 +74,34 @@ const addEmail = async (req, res) => {
 
     console.log(response);
 
-    prisma.email.create({});
+    await prisma.email.create({
+      data: emailData,
+    });
+
+    res.json(response.data);
+  } catch (error) {
+    console.error("Error:", error.response ? error.response.data : error);
+    res.status(500).json({ error: "Failed to fetch contacts" }); // Send error response  }
+  }
+};
+
+const deleteEmail = async (req, res) => {
+  try {
+    const response = await axios.delete(
+      `https://api.hubapi.com/marketing/v3/emails/${req.params.id}`,
+      {
+        headers: {
+          Authorization: `Bearer CKiClp_3MRIHAgGAQAAAARil0PcVIMzO2x8olK3KATIUPQZVIKIPf3XZ_TlrG82qMiYY37g6UAAgAEH_BwAAAACAAABgeMAkgAAAIAAAAAQAADgAAADAw_8BAQAAAIAHAAAAAAAQAgAAAAAAAAAAAAACAAi4AgAAAAAAAAAAAAAAAAAAAABAQhQFcGIEAs9BltIspN6hVH5rmgUKf0oDbmExUgBaAGAA`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    await prisma.email.delete({
+      where: {
+        id: req.params.id,
+      },
+    });
 
     res.json(response.data);
   } catch (error) {
@@ -86,4 +113,5 @@ const addEmail = async (req, res) => {
 module.exports = {
   getEmails,
   addEmail,
+  deleteEmail,
 };
