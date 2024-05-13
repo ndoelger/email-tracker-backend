@@ -26,17 +26,12 @@ const getAccessToken = async (req, res) => {
     code: req.query.code,
   });
 
-  console.log(req.params);
+  const tokens = await exchangeForTokens(params);
 
-  const tokens = await exchangeForTokens(req.sessionID, params);
-  // refreshToken[req.sessionID] = tokens.refresh_token;
-  // Once the tokens have been retrieved, use them to make a query
-  // to the HubSpot API
-  // res.json(tokens.access_token);
   res.redirect("http://localhost:3000/dashboard");
 };
 
-const exchangeForTokens = async (id, form) => {
+const exchangeForTokens = async (form) => {
   try {
     const response = await axios.post(
       "https://api.hubapi.com/oauth/v1/token",
