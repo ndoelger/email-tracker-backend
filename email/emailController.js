@@ -7,6 +7,7 @@ const ACCESS_SECRET = process.env.ACCESS_SECRET;
 const ID_SECRET = process.env.ID_SECRET;
 const REDIRECT_URI = process.env.REDIRECT_URI;
 
+// GET ALL EMAILS
 const getEmails = async (req, res) => {
   const accessToken = tokenCache.get(ACCESS_SECRET);
 
@@ -34,6 +35,7 @@ const getEmails = async (req, res) => {
       };
     });
 
+    // REMOVE EMAILS THAT WERE REMOVED FROM HUBSPOT BUT NOT FROM THE APP
     const hubspotEmailIds = emails.map((email) => email.email_id);
 
     const localEmails = await prisma.email.findMany({
@@ -51,6 +53,7 @@ const getEmails = async (req, res) => {
       },
     });
 
+    // ADD/UPDATE ALL EMAILS
     for (const email of emails) {
       await prisma.email.upsert({
         where: { email_id: email.email_id },
@@ -71,6 +74,7 @@ const getEmails = async (req, res) => {
   }
 };
 
+// ADD AN EMAIL
 const addEmail = async (req, res) => {
   const accessToken = tokenCache.get(ACCESS_SECRET);
   if (!accessToken) {
@@ -81,6 +85,7 @@ const addEmail = async (req, res) => {
       `https://api.hubapi.com/marketing/v3/emails`,
       {
         content: {
+          // "templatePath" PREVENTS THE EMAIL FROM BECOMING PREMIUM
           templatePath: "@hubspot/email/dnd/welcome.html",
           widgets: {
             preview_text: {
@@ -92,10 +97,6 @@ const addEmail = async (req, res) => {
         },
         name: req.body.payload.name,
         subject: req.body.payload.subject,
-        from: {
-          fromName: "Nic Doelger",
-          replyTo: "doelgern@gmail.com",
-        },
       },
       {
         headers: {
@@ -112,6 +113,7 @@ const addEmail = async (req, res) => {
       email_id: response.data.id,
     };
 
+    // ADD EMAIL TO THE DATABASE WITH FOREIGN KEY (HUB_ID)
     await prisma.email.create({
       data: { ...emailData, hub_id: tokenCache.get(ID_SECRET) },
     });
@@ -123,6 +125,7 @@ const addEmail = async (req, res) => {
   }
 };
 
+// DELETE AN EMAIL
 const deleteEmail = async (req, res) => {
   const accessToken = tokenCache.get(ACCESS_SECRET);
   if (!accessToken) {
@@ -139,6 +142,7 @@ const deleteEmail = async (req, res) => {
       }
     );
 
+    // DELETE FROM DATABASE
     await prisma.email.delete({
       where: {
         email_id: req.params.id,
@@ -152,21 +156,50 @@ const deleteEmail = async (req, res) => {
   }
 };
 
+// EDIT AN EMAIL
 const editEmail = async (req, res) => {
   const accessToken = tokenCache.get(ACCESS_SECRET);
   if (!accessToken) {
     return res.redirect(`${REDIRECT_URI}/refresh`);
   }
+
+  const currentEmail = await axios.get(
+    `https://api.hubapi.com/marketing/v3/emails/${req.params.id}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  const currentEmailData = currentEmail.data;
+
+  // USING HUBSPOT'S LEGACY API TO PREVENT CONTENT OVERWRITE
   try {
-    const response = await axios.put(
-      `https://api.hubapi.com/marketing-emails/v1/emails/${req.params.id}`,
+    const response = await axios.patch(
+      `https://api.hubapi.com/marketing/v3/emails/${req.params.id}`,
       {
-        name: req.body.payload.name,
-        subject: req.body.payload.subject,
+        ...currentEmailData,
+        name: req.body.payload.name || currentEmailData.name,
+        subject: req.body.payload.subject || currentEmailData.subject,
+        content: {
+          ...currentEmailData.content,
+          widgets: {
+            ...currentEmailData.content.widgets,
+            preview_text: {
+              body: {
+                value:
+                  req.body.payload.preview ||
+                  currentEmailData.content.widgets.preview_text.body.value,
+              },
+            },
+          },
+        },
       },
       {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer CIKS88b3MRICAgEYpdD3FSD6svofKJStygEyFMmbMoolUZFFabBBod5Ro9hkIlp-OlAAIABB_wcAAAAAgAAAYHjAIAAAACAAAAAEAAAYAAAAwMMfAAEAAACABwAAAAAAAAAAAAAAAAAAAAAAAgAIuAIAAAAAAAAAAAAAAAAAAAAAQEIU1G4tXE7mu906Cu7KfhF2gq1KDH5KA25hMVIAWgBgAA`,
           "Content-Type": "application/json",
         },
       }
@@ -175,7 +208,7 @@ const editEmail = async (req, res) => {
     const emailData = {
       name: response.data.name,
       subject: response.data.subject,
-      preview: response.data.widgets.preview_text.body.value,
+      preview: response.data.content.widgets.preview_text.body.value,
     };
 
     await prisma.email.update({
