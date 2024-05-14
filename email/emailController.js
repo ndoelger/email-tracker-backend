@@ -12,9 +12,12 @@ const getEmails = async (req, res) => {
   if (!accessToken) {
     return res.redirect(`${REDIRECT_URI}/refresh`);
   }
+  console.log(req.query.limit);
   try {
+    const limit = req.query.limit || 10;
+
     const response = await axios.get(
-      `https://api.hubapi.com/marketing/v3/emails`,
+      `https://api.hubapi.com/marketing/v3/emails?limit=${limit}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -30,6 +33,8 @@ const getEmails = async (req, res) => {
         name: email.name,
       };
     });
+
+    console.log(JSON.stringify(emails));
 
     const databaseEmails = await prisma.email
       .findMany({
@@ -60,7 +65,6 @@ const getEmails = async (req, res) => {
         },
       });
     }
-
     res.json(emails);
   } catch (error) {
     console.error("Error:", error.response ? error.response.data : error);
