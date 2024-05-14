@@ -50,7 +50,6 @@ const exchangeForTokens = async (form) => {
       }
     );
 
-    console.log(response);
 
     console.log("TOKENS RECEIVED");
 
@@ -71,14 +70,10 @@ const exchangeForTokens = async (form) => {
       `https://api.hubapi.com/oauth/v1/refresh-tokens/${refreshToken}`
     );
 
-    console.log(userInfo);
-
     const userData = {
       hub_domain: userInfo.data.hub_domain,
       hub_id: userInfo.data.hub_id,
     };
-
-    console.log(userData);
 
     await prisma.user.upsert({
       where: { hub_id: userData.hub_id },
@@ -91,6 +86,7 @@ const exchangeForTokens = async (form) => {
         hub_id: userData.hub_id,
       },
     });
+    
     return tokens;
   } catch (error) {
     console.error("Error:", error.response ? error.response.data : error);
