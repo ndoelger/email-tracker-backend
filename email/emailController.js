@@ -34,8 +34,6 @@ const getEmails = async (req, res) => {
       };
     });
 
-    console.log(JSON.stringify(emails));
-
     const databaseEmails = await prisma.email
       .findMany({
         select: { id: true },
