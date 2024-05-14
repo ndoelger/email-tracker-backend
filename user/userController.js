@@ -6,6 +6,7 @@ const prisma = require("../prisma/prismaClient");
 const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
 const REDIRECT_URI = process.env.REDIRECT_URI;
+const SECRET = process.env.SECRET
 let SCOPES = process.env.SCOPES;
 
 const getUrl = (req, res) => {
@@ -47,14 +48,13 @@ const exchangeForTokens = async (form) => {
     tokens = response.data;
 
     accessToken = tokens.access_token;
-    console.log(accessToken)
     refreshToken = tokens.refresh_token;
     expires_in = tokens.expires_in;
 
     tokenCache.set(
-      "accessToken",
+      SECRET,
       accessToken,
-      Math.round(tokens.expires_in * 0.75)
+      Math.round(expires_in * 0.75)
     );
 
     await prisma.user.upsert({

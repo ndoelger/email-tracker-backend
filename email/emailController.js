@@ -2,14 +2,16 @@ const axios = require("axios");
 const tokenCache = require("../cache");
 const prisma = require("../prisma/prismaClient");
 
+const SECRET = process.env.SECRET;
+
 const getEmails = async (req, res) => {
-  const accessToken = tokenCache.get("accessToken");
+  const accessToken = tokenCache.get(SECRET);
   try {
     const response = await axios.get(
       `https://api.hubapi.com/marketing/v3/emails`,
       {
         headers: {
-          Authorization: `Bearer CNCb6qP3MRIHAgGAQAAAARil0PcVIMzO2x8olK3KATIUgjhTEh21G_GjV2febwssOT6vlMI6UAAgAEH_BwAAAACAAABgeMAkgAAAIAAAAAQAADgAAADAw_8BAQAAAIAHAAAAAAAQAgAAAAAAAAAAAAACAAi4AgAAAAAAAAAAAAAAAAAAAABAQhRZdRQ0qO979fsFHlN7cPme04A9aEoDbmExUgBaAGAA`,
+          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
       }
@@ -39,7 +41,7 @@ const getEmails = async (req, res) => {
 };
 
 const addEmail = async (req, res) => {
-  const accessToken = tokenCache.get("accessToken");
+  const accessToken = tokenCache.get(SECRET);
   try {
     console.log(req.body.payload.preview);
     const response = await axios.post(
@@ -59,7 +61,7 @@ const addEmail = async (req, res) => {
       },
       {
         headers: {
-          Authorization: `Bearer CNCb6qP3MRIHAgGAQAAAARil0PcVIMzO2x8olK3KATIUgjhTEh21G_GjV2febwssOT6vlMI6UAAgAEH_BwAAAACAAABgeMAkgAAAIAAAAAQAADgAAADAw_8BAQAAAIAHAAAAAAAQAgAAAAAAAAAAAAACAAi4AgAAAAAAAAAAAAAAAAAAAABAQhRZdRQ0qO979fsFHlN7cPme04A9aEoDbmExUgBaAGAA`,
+          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
       }
@@ -86,12 +88,13 @@ const addEmail = async (req, res) => {
 };
 
 const deleteEmail = async (req, res) => {
+  const accessToken = tokenCache.get(SECRET);
   try {
     const response = await axios.delete(
       `https://api.hubapi.com/marketing/v3/emails/${req.params.id}`,
       {
         headers: {
-          Authorization: `Bearer CNCb6qP3MRIHAgGAQAAAARil0PcVIMzO2x8olK3KATIUgjhTEh21G_GjV2febwssOT6vlMI6UAAgAEH_BwAAAACAAABgeMAkgAAAIAAAAAQAADgAAADAw_8BAQAAAIAHAAAAAAAQAgAAAAAAAAAAAAACAAi4AgAAAAAAAAAAAAAAAAAAAABAQhRZdRQ0qO979fsFHlN7cPme04A9aEoDbmExUgBaAGAA`,
+          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
       }
@@ -111,6 +114,8 @@ const deleteEmail = async (req, res) => {
 };
 
 const editEmail = async (req, res) => {
+  const accessToken = tokenCache.get(SECRET);
+
   try {
     console.log(req.body.payload.preview);
     const response = await axios.patch(
@@ -130,7 +135,7 @@ const editEmail = async (req, res) => {
       },
       {
         headers: {
-          Authorization: `Bearer CNCb6qP3MRIHAgGAQAAAARil0PcVIMzO2x8olK3KATIUgjhTEh21G_GjV2febwssOT6vlMI6UAAgAEH_BwAAAACAAABgeMAkgAAAIAAAAAQAADgAAADAw_8BAQAAAIAHAAAAAAAQAgAAAAAAAAAAAAACAAi4AgAAAAAAAAAAAAAAAAAAAABAQhRZdRQ0qO979fsFHlN7cPme04A9aEoDbmExUgBaAGAA`,
+          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
       }
