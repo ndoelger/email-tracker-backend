@@ -9,7 +9,6 @@ const REDIRECT_URI = process.env.REDIRECT_URI;
 const getEmails = async (req, res) => {
   const accessToken = tokenCache.get(ACCESS_SECRET);
   if (!accessToken) {
-    console.log("expired");
     return res.redirect(`${REDIRECT_URI}/refresh`);
   }
   try {
@@ -42,14 +41,13 @@ const getEmails = async (req, res) => {
     res.json(emails);
   } catch (error) {
     console.error("Error:", error.response ? error.response.data : error);
-    res.status(500).json({ error: "Failed to fetch contacts" }); // Send error response  }
+    res.status(500).json({ error: "Failed to fetch contacts" }); 
   }
 };
 
 const addEmail = async (req, res) => {
   const accessToken = tokenCache.get(ACCESS_SECRET);
   if (!accessToken) {
-    console.log("expired");
     return res.redirect(`${REDIRECT_URI}/refresh`);
   }
   try {
@@ -90,14 +88,13 @@ const addEmail = async (req, res) => {
     res.json(response.data);
   } catch (error) {
     console.error("Error:", error.response ? error.response.data : error);
-    res.status(500).json({ error: "Failed to fetch contacts" }); // Send error response  }
+    res.status(500).json({ error: "Failed to fetch contacts" }); 
   }
 };
 
 const deleteEmail = async (req, res) => {
   const accessToken = tokenCache.get(ACCESS_SECRET);
   if (!accessToken) {
-    console.log("expired");
     return res.redirect(`${REDIRECT_URI}/refresh`);
   }
   try {
@@ -120,14 +117,13 @@ const deleteEmail = async (req, res) => {
     res.json(response.data);
   } catch (error) {
     console.error("Error:", error.response ? error.response.data : error);
-    res.status(500).json({ error: "Failed to fetch contacts" }); // Send error response  }
+    res.status(500).json({ error: "Failed to fetch contacts" });
   }
 };
 
 const editEmail = async (req, res) => {
   const accessToken = tokenCache.get(ACCESS_SECRET);
   if (!accessToken) {
-    console.log("expired");
     return res.redirect(`${REDIRECT_URI}/refresh`);
   }
   try {
@@ -170,7 +166,7 @@ const editEmail = async (req, res) => {
     res.json(response.data);
   } catch (error) {
     console.error("Error:", error.response ? error.response.data : error);
-    res.status(500).json({ error: "Failed to fetch contacts" }); // Send error response  }
+    res.status(500).json({ error: "Failed to fetch contacts" });
   }
 };
 
