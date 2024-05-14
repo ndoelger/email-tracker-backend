@@ -11,6 +11,7 @@ const REFRESH_SECRET = process.env.REFRESH_SECRET;
 const ID_SECRET = process.env.ID_SECRET;
 let SCOPES = process.env.SCOPES;
 
+// GET AUTHURL TO SEND TO FRONTEND
 const getUrl = (req, res) => {
   console.log("FETCHING AUTHENTICATION FOR FRONTEND");
   const authUrl =
@@ -22,6 +23,7 @@ const getUrl = (req, res) => {
   res.json({ authUrl });
 };
 
+// RECEIVE AUTHORIZATION CODE AND SEND CREDENTIALS TO EXCHANGE FUNCTION
 const getAccessToken = async (req, res) => {
   console.log("RECEIVED AUTHORIZATION CODE, NOW EXCHANGING FOR TOKENS");
   const accessParams = new URLSearchParams({
@@ -39,6 +41,7 @@ const getAccessToken = async (req, res) => {
   res.redirect("http://localhost:3000/dashboard");
 };
 
+// CALL THE OAUTH WITH CREDENTIALS API TO RECEIVE ACCESS AND REFRESH TOKEN
 const exchangeForTokens = async (form) => {
   try {
     const response = await axios.post(
@@ -61,11 +64,12 @@ const exchangeForTokens = async (form) => {
 
     console.log("SETTING/RESETTING ACCESS AND REFRESH TOKENS IN BACKEND CACHE");
 
-    tokenCache.set(ACCESS_SECRET, accessToken, expires_in * 0.75);
+    tokenCache.set(ACCESS_SECRET, accessToken, expires_in * 0.75); // WILL EXPIRE A BIT BEFORE THE ACCESS TOKEN EXPIRES
     tokenCache.set(REFRESH_SECRET, refreshToken);
 
     console.log("ADDING/UPDATING TOKENS IN DATABASE");
 
+    // GETTING FURTHER USER INFORMATION FOR DATABASE
     const userInfo = await axios.get(
       `https://api.hubapi.com/oauth/v1/refresh-tokens/${refreshToken}`
     );
@@ -77,7 +81,7 @@ const exchangeForTokens = async (form) => {
 
     tokenCache.set(ID_SECRET, userData.hub_id);
 
-
+    // ADD USER INFORMATION TO DATABASE 
     await prisma.user.upsert({
       where: { hub_id: userData.hub_id },
       update: {
@@ -96,6 +100,7 @@ const exchangeForTokens = async (form) => {
   }
 };
 
+// THIS GETS A NEW ACCESS TOKEN WHEN THE CURRENT ONE IS SOON TO EXPIRED
 const refreshAccessToken = async (req, res) => {
   console.log(
     "ACCESS TOKEN HAS EXPIRED, RETRIEVING A NEW CODE WITH THE REFRESH TOKEN"
@@ -105,7 +110,7 @@ const refreshAccessToken = async (req, res) => {
     client_id: CLIENT_ID,
     client_secret: CLIENT_SECRET,
     redirect_uri: REDIRECT_URI,
-    refresh_token: tokenCache.get(REFRESH_SECRET),
+    refresh_token: tokenCache.get(REFRESH_SECRET), //TAKES REFRESH TOKEN FROM CACHE
   });
 
   const tokens = await exchangeForTokens(refreshParams);

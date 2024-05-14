@@ -4,22 +4,18 @@ const PORT = 3001;
 
 const express = require("express");
 const cors = require("cors");
-const morgan = require("morgan");
-const axios = require("axios");
-const session = require("express-session");
 
 const app = express();
-
-const tokenCache = require("./util/cache");
 
 const userRouter = require("./user/userRouter");
 const emailRouter = require("./email/emailRouter");
 
+// PARSES JSON BODIES
 app.use(express.json());
+// LETS LOCALHOST:3000 TALK TO 3001
 app.use(cors());
 
-app.use(express.static("public"));
-
+// APP ROUTES
 app.use("/login", userRouter);
 app.use("/email", emailRouter);
 

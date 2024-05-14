@@ -16,17 +16,17 @@ datasource db {
 
 
 model Email {
-  id        Int @id @default(autoincrement())
+  id        Int @id @default(autoincrement()) //PRIMARY KEY
   email_id  BigInt? @unique
   subject   String
   preview   String
   name      String
-  hub_id    BigInt
+  hub_id    BigInt // FOREIGN KEY
   user      User @relation(fields: [hub_id], references:[hub_id])
 }
 
 model User {
-  id                Int    @id @default(autoincrement())
+  id                Int    @id @default(autoincrement()) // PRIMARY KEY
   hub_id            BigInt @unique
   hub_domain        String 
   emails            Email[]

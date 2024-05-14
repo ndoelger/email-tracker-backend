@@ -163,6 +163,7 @@ const editEmail = async (req, res) => {
     return res.redirect(`${REDIRECT_URI}/refresh`);
   }
 
+  // PULL CURRENT EMAIL DATA TO PREVENT OVERWRITING
   const currentEmail = await axios.get(
     `https://api.hubapi.com/marketing/v3/emails/${req.params.id}`,
     {
@@ -175,11 +176,11 @@ const editEmail = async (req, res) => {
 
   const currentEmailData = currentEmail.data;
 
-  // USING HUBSPOT'S LEGACY API TO PREVENT CONTENT OVERWRITE
   try {
     const response = await axios.patch(
       `https://api.hubapi.com/marketing/v3/emails/${req.params.id}`,
       {
+        // MERGE WITH NEW DATA
         ...currentEmailData,
         name: req.body.payload.name || currentEmailData.name,
         subject: req.body.payload.subject || currentEmailData.subject,
@@ -205,6 +206,7 @@ const editEmail = async (req, res) => {
       }
     );
 
+    // UPDATE DATABASE
     const emailData = {
       name: response.data.name,
       subject: response.data.subject,
