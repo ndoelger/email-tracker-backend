@@ -1,6 +1,5 @@
 require("dotenv").config();
 
-const SECRET = process.env.SECRET
 const PORT = 3001;
 
 const express = require("express");
@@ -11,8 +10,7 @@ const session = require("express-session");
 
 const app = express();
 
-let refreshToken = {};
-const tokenCache = require("./cache");
+const tokenCache = require("./util/cache");
 
 const userRouter = require("./user/userRouter");
 const emailRouter = require("./email/emailRouter");

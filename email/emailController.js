@@ -1,11 +1,16 @@
 const axios = require("axios");
-const tokenCache = require("../cache");
+const tokenCache = require("../util/cache");
 const prisma = require("../prisma/prismaClient");
+const { refreshAccessToken } = require("../user/userController");
 
-const SECRET = process.env.SECRET;
+const ACCESS_SECRET = process.env.ACCESS_SECRET;
+const REDIRECT_URI = process.env.REDIRECT_URI;
 
 const getEmails = async (req, res) => {
-  const accessToken = tokenCache.get(SECRET);
+  const accessToken = tokenCache.get(ACCESS_SECRET);
+  if (!accessToken) {
+    return res.redirect(`${REDIRECT_URI}/refresh`);
+  }
   try {
     const response = await axios.get(
       `https://api.hubapi.com/marketing/v3/emails`,
@@ -25,6 +30,22 @@ const getEmails = async (req, res) => {
       };
     });
 
+    const databaseEmails = await prisma.email
+      .findMany({
+        select: { id: true },
+      })
+      .then((emails) => emails.map((email) => email.id));
+
+    const incomingEmailIds = emails.map((email) => email.id);
+
+    const emailIdsToDelete = databaseEmails.filter(
+      (id) => !incomingEmailIds.includes(id)
+    );
+
+    await prisma.email.deleteMany({
+      where: { id: { in: emailIdsToDelete } },
+    });
+
     for (const email of emails) {
       await prisma.email.upsert({
         where: { id: email.id },
@@ -36,14 +57,16 @@ const getEmails = async (req, res) => {
     res.json(emails);
   } catch (error) {
     console.error("Error:", error.response ? error.response.data : error);
-    res.status(500).json({ error: "Failed to fetch contacts" }); // Send error response  }
+    res.status(500).json({ error: "Failed to fetch contacts" });
   }
 };
 
 const addEmail = async (req, res) => {
-  const accessToken = tokenCache.get(SECRET);
+  const accessToken = tokenCache.get(ACCESS_SECRET);
+  if (!accessToken) {
+    return res.redirect(`${REDIRECT_URI}/refresh`);
+  }
   try {
-    console.log(req.body.payload.preview);
     const response = await axios.post(
       `https://api.hubapi.com/marketing/v3/emails`,
       {
@@ -67,8 +90,6 @@ const addEmail = async (req, res) => {
       }
     );
 
-    console.log(response.data);
-
     const emailData = {
       name: response.data.name,
       subject: response.data.subject,
@@ -83,12 +104,15 @@ const addEmail = async (req, res) => {
     res.json(response.data);
   } catch (error) {
     console.error("Error:", error.response ? error.response.data : error);
-    res.status(500).json({ error: "Failed to fetch contacts" }); // Send error response  }
+    res.status(500).json({ error: "Failed to fetch contacts" });
   }
 };
 
 const deleteEmail = async (req, res) => {
-  const accessToken = tokenCache.get(SECRET);
+  const accessToken = tokenCache.get(ACCESS_SECRET);
+  if (!accessToken) {
+    return res.redirect(`${REDIRECT_URI}/refresh`);
+  }
   try {
     const response = await axios.delete(
       `https://api.hubapi.com/marketing/v3/emails/${req.params.id}`,
@@ -109,15 +133,16 @@ const deleteEmail = async (req, res) => {
     res.json(response.data);
   } catch (error) {
     console.error("Error:", error.response ? error.response.data : error);
-    res.status(500).json({ error: "Failed to fetch contacts" }); // Send error response  }
+    res.status(500).json({ error: "Failed to fetch contacts" });
   }
 };
 
 const editEmail = async (req, res) => {
-  const accessToken = tokenCache.get(SECRET);
-
+  const accessToken = tokenCache.get(ACCESS_SECRET);
+  if (!accessToken) {
+    return res.redirect(`${REDIRECT_URI}/refresh`);
+  }
   try {
-    console.log(req.body.payload.preview);
     const response = await axios.patch(
       `https://api.hubapi.com/marketing/v3/emails/${req.params.id}`,
       {
@@ -157,7 +182,7 @@ const editEmail = async (req, res) => {
     res.json(response.data);
   } catch (error) {
     console.error("Error:", error.response ? error.response.data : error);
-    res.status(500).json({ error: "Failed to fetch contacts" }); // Send error response  }
+    res.status(500).json({ error: "Failed to fetch contacts" });
   }
 };
 
