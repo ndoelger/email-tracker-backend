@@ -8,6 +8,7 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
 const REDIRECT_URI = process.env.REDIRECT_URI;
 const ACCESS_SECRET = process.env.ACCESS_SECRET;
 const REFRESH_SECRET = process.env.REFRESH_SECRET;
+const ID_SECRET = process.env.ID_SECRET;
 let SCOPES = process.env.SCOPES;
 
 const getUrl = (req, res) => {
@@ -50,7 +51,6 @@ const exchangeForTokens = async (form) => {
       }
     );
 
-
     console.log("TOKENS RECEIVED");
 
     const tokens = response.data;
@@ -75,6 +75,9 @@ const exchangeForTokens = async (form) => {
       hub_id: userInfo.data.hub_id,
     };
 
+    tokenCache.set(ID_SECRET, userData.hub_id);
+
+
     await prisma.user.upsert({
       where: { hub_id: userData.hub_id },
       update: {
@@ -86,7 +89,7 @@ const exchangeForTokens = async (form) => {
         hub_id: userData.hub_id,
       },
     });
-    
+
     return tokens;
   } catch (error) {
     console.error("Error:", error.response ? error.response.data : error);

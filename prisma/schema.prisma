@@ -17,15 +17,17 @@ datasource db {
 
 model Email {
   id        Int @id @default(autoincrement())
-  email_id  BigInt
+  email_id  BigInt? @unique
   subject   String
   preview   String
   name      String
-  user_id   String
+  hub_id    BigInt
+  user      User @relation(fields: [hub_id], references:[hub_id])
 }
 
 model User {
   id                Int    @id @default(autoincrement())
   hub_id            BigInt @unique
   hub_domain        String 
+  emails            Email[]
 }
