@@ -8,6 +8,7 @@ const CLIENT_SECRET = process.env.CLIENT_SECRET;
 const REDIRECT_URI = process.env.REDIRECT_URI;
 const ACCESS_SECRET = process.env.ACCESS_SECRET;
 const REFRESH_SECRET = process.env.REFRESH_SECRET;
+const ID_SECRET = process.env.ID_SECRET;
 let SCOPES = process.env.SCOPES;
 
 const getUrl = (req, res) => {
@@ -50,15 +51,13 @@ const exchangeForTokens = async (form) => {
       }
     );
 
-    console.log(response);
-
     console.log("TOKENS RECEIVED");
 
-    tokens = response.data;
+    const tokens = response.data;
 
-    accessToken = tokens.access_token;
-    refreshToken = tokens.refresh_token;
-    expires_in = tokens.expires_in;
+    const accessToken = tokens.access_token;
+    const refreshToken = tokens.refresh_token;
+    const expires_in = tokens.expires_in;
 
     console.log("SETTING/RESETTING ACCESS AND REFRESH TOKENS IN BACKEND CACHE");
 
@@ -67,16 +66,27 @@ const exchangeForTokens = async (form) => {
 
     console.log("ADDING/UPDATING TOKENS IN DATABASE");
 
+    const userInfo = await axios.get(
+      `https://api.hubapi.com/oauth/v1/refresh-tokens/${refreshToken}`
+    );
+
+    const userData = {
+      hub_domain: userInfo.data.hub_domain,
+      hub_id: userInfo.data.hub_id,
+    };
+
+    tokenCache.set(ID_SECRET, userData.hub_id);
+
+
     await prisma.user.upsert({
-      where: {
-        refresh_token: refreshToken,
-      },
+      where: { hub_id: userData.hub_id },
       update: {
-        access_token: accessToken,
+        hub_domain: userData.hub_domain,
+        hub_id: userData.hub_id,
       },
       create: {
-        access_token: accessToken,
-        refresh_token: refreshToken,
+        hub_domain: userData.hub_domain,
+        hub_id: userData.hub_id,
       },
     });
 
