@@ -20,6 +20,7 @@ model Email {
   subject      String
   preview      String
   name        String
+user_id String 
 }
 
 model User {

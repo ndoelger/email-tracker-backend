@@ -50,6 +50,8 @@ const exchangeForTokens = async (form) => {
       }
     );
 
+    console.log(response);
+
     console.log("TOKENS RECEIVED");
 
     tokens = response.data;

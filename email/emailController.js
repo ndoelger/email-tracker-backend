@@ -4,6 +4,7 @@ const prisma = require("../prisma/prismaClient");
 const { refreshAccessToken } = require("../user/userController");
 
 const ACCESS_SECRET = process.env.ACCESS_SECRET;
+const REFRESH_SECRET = process.env.REFRESH_SECRET;
 const REDIRECT_URI = process.env.REDIRECT_URI;
 
 const getEmails = async (req, res) => {
@@ -49,8 +50,14 @@ const getEmails = async (req, res) => {
     for (const email of emails) {
       await prisma.email.upsert({
         where: { id: email.id },
-        update: email,
-        create: email,
+        update: {
+          ...email,
+          user_id: tokenCache.get(REFRESH_SECRET),
+        },
+        create: {
+          ...email,
+          user_id: tokenCache.get(REFRESH_SECRET),
+        },
       });
     }
 
@@ -98,7 +105,7 @@ const addEmail = async (req, res) => {
     };
 
     await prisma.email.create({
-      data: emailData,
+      data: { ...emailData, user_id: tokenCache.get(REFRESH_SECRET) },
     });
 
     res.json(response.data);
