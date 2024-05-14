@@ -1,11 +1,17 @@
 const axios = require("axios");
-const tokenCache = require("../cache");
+const tokenCache = require("../util/cache");
 const prisma = require("../prisma/prismaClient");
+const { refreshAccessToken } = require("../user/userController");
 
-const SECRET = process.env.SECRET;
+const ACCESS_SECRET = process.env.ACCESS_SECRET;
+const REDIRECT_URI = process.env.REDIRECT_URI;
 
 const getEmails = async (req, res) => {
-  const accessToken = tokenCache.get(SECRET);
+  const accessToken = tokenCache.get(ACCESS_SECRET);
+  if (!accessToken) {
+    console.log("expired");
+    return res.redirect(`${REDIRECT_URI}/refresh`);
+  }
   try {
     const response = await axios.get(
       `https://api.hubapi.com/marketing/v3/emails`,
@@ -41,9 +47,9 @@ const getEmails = async (req, res) => {
 };
 
 const addEmail = async (req, res) => {
-  const accessToken = tokenCache.get(SECRET);
+  const accessToken = tokenCache.get(ACCESS_SECRET);
+  if (!accessToken) await refreshAccessToken();
   try {
-    console.log(req.body.payload.preview);
     const response = await axios.post(
       `https://api.hubapi.com/marketing/v3/emails`,
       {
@@ -67,8 +73,6 @@ const addEmail = async (req, res) => {
       }
     );
 
-    console.log(response.data);
-
     const emailData = {
       name: response.data.name,
       subject: response.data.subject,
@@ -88,7 +92,8 @@ const addEmail = async (req, res) => {
 };
 
 const deleteEmail = async (req, res) => {
-  const accessToken = tokenCache.get(SECRET);
+  const accessToken = tokenCache.get(ACCESS_SECRET);
+  if (!accessToken) await refreshAccessToken();
   try {
     const response = await axios.delete(
       `https://api.hubapi.com/marketing/v3/emails/${req.params.id}`,
@@ -114,10 +119,9 @@ const deleteEmail = async (req, res) => {
 };
 
 const editEmail = async (req, res) => {
-  const accessToken = tokenCache.get(SECRET);
-
+  const accessToken = tokenCache.get(ACCESS_SECRET);
+  if (!accessToken) await refreshAccessToken();
   try {
-    console.log(req.body.payload.preview);
     const response = await axios.patch(
       `https://api.hubapi.com/marketing/v3/emails/${req.params.id}`,
       {
