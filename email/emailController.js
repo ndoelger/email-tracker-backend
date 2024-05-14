@@ -1,7 +1,6 @@
 const axios = require("axios");
 const tokenCache = require("../util/cache");
 const prisma = require("../prisma/prismaClient");
-const { refreshAccessToken } = require("../user/userController");
 
 const ACCESS_SECRET = process.env.ACCESS_SECRET;
 const ID_SECRET = process.env.ID_SECRET;
