@@ -30,6 +30,22 @@ const getEmails = async (req, res) => {
       };
     });
 
+    const databaseEmails = await prisma.email
+      .findMany({
+        select: { id: true },
+      })
+      .then((emails) => emails.map((email) => email.id));
+
+    const incomingEmailIds = emails.map((email) => email.id);
+
+    const emailIdsToDelete = databaseEmails.filter(
+      (id) => !incomingEmailIds.includes(id)
+    );
+
+    await prisma.email.deleteMany({
+      where: { id: { in: emailIdsToDelete } },
+    });
+
     for (const email of emails) {
       await prisma.email.upsert({
         where: { id: email.id },
@@ -41,7 +57,7 @@ const getEmails = async (req, res) => {
     res.json(emails);
   } catch (error) {
     console.error("Error:", error.response ? error.response.data : error);
-    res.status(500).json({ error: "Failed to fetch contacts" }); 
+    res.status(500).json({ error: "Failed to fetch contacts" });
   }
 };
 
@@ -88,7 +104,7 @@ const addEmail = async (req, res) => {
     res.json(response.data);
   } catch (error) {
     console.error("Error:", error.response ? error.response.data : error);
-    res.status(500).json({ error: "Failed to fetch contacts" }); 
+    res.status(500).json({ error: "Failed to fetch contacts" });
   }
 };
 
