@@ -199,7 +199,7 @@ const editEmail = async (req, res) => {
       },
       {
         headers: {
-          Authorization: `Bearer CIKS88b3MRICAgEYpdD3FSD6svofKJStygEyFMmbMoolUZFFabBBod5Ro9hkIlp-OlAAIABB_wcAAAAAgAAAYHjAIAAAACAAAAAEAAAYAAAAwMMfAAEAAACABwAAAAAAAAAAAAAAAAAAAAAAAgAIuAIAAAAAAAAAAAAAAAAAAAAAQEIU1G4tXE7mu906Cu7KfhF2gq1KDH5KA25hMVIAWgBgAA`,
+          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
       }
