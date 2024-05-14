@@ -10,7 +10,7 @@ const ACCESS_SECRET = process.env.ACCESS_SECRET;
 const REFRESH_SECRET = process.env.REFRESH_SECRET;
 let SCOPES = process.env.SCOPES;
 
-console.log("it made it")
+console.log("it made it");
 
 const getUrl = (req, res) => {
   const authUrl =
@@ -37,7 +37,7 @@ const getAccessToken = async (req, res) => {
 };
 
 const exchangeForTokens = async (form) => {
-  console.log(form)
+  console.log(form.toString());
   try {
     const response = await axios.post(
       "https://api.hubapi.com/oauth/v1/token",
@@ -49,58 +49,15 @@ const exchangeForTokens = async (form) => {
       }
     );
 
-    console.log("response", response)
+    // console.log("response", response)
     tokens = response.data;
-    console.log(tokens)
+    // console.log(tokens)
 
     accessToken = tokens.access_token;
     refreshToken = tokens.refresh_token;
     expires_in = tokens.expires_in;
 
-    tokenCache.set(ACCESS_SECRET, accessToken, 3);
-    tokenCache.set(REFRESH_SECRET, refreshToken);
-
-    await prisma.user.upsert({
-      where: {
-        refresh_token: refreshToken, // This is now a valid unique identifier
-      },
-      update: {
-        access_token: accessToken,
-      },
-      create: {
-        access_token: accessToken,
-        refresh_token: refreshToken,
-      },
-    });
-
-    return tokens;
-  } catch (error) {
-    console.error("Error:", error.response ? error.response.data : error);
-  }
-};
-
-const exchangeForTokensRefresh = async (form) => {
-  console.log(form)
-  try {
-    const response = await axios.post(
-      "https://api.hubapi.com/oauth/v1/token",
-      form.toString(), // Converts the parameters to URL-encoded string
-      {
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-      }
-    );
-
-    console.log("response", response)
-    tokens = response.data;
-    console.log(tokens)
-
-    accessToken = tokens.access_token;
-    refreshToken = tokens.refresh_token;
-    expires_in = tokens.expires_in;
-
-    tokenCache.set(ACCESS_SECRET, accessToken, 3);
+    tokenCache.set(ACCESS_SECRET, accessToken, expires_in * 0.75);
     tokenCache.set(REFRESH_SECRET, refreshToken);
 
     await prisma.user.upsert({
@@ -123,14 +80,13 @@ const exchangeForTokensRefresh = async (form) => {
 };
 
 const refreshAccessToken = async (req, res) => {
-
-  const refreshParams = {
+  const refreshParams = new URLSearchParams({
     grant_type: "refresh_token",
     client_id: CLIENT_ID,
     client_secret: CLIENT_SECRET,
     redirect_uri: REDIRECT_URI,
     refresh_token: tokenCache.get(REFRESH_SECRET),
-  };
+  });
 
   const tokens = await exchangeForTokens(refreshParams);
 

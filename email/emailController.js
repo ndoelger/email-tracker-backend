@@ -48,7 +48,10 @@ const getEmails = async (req, res) => {
 
 const addEmail = async (req, res) => {
   const accessToken = tokenCache.get(ACCESS_SECRET);
-  if (!accessToken) await refreshAccessToken();
+  if (!accessToken) {
+    console.log("expired");
+    return res.redirect(`${REDIRECT_URI}/refresh`);
+  }
   try {
     const response = await axios.post(
       `https://api.hubapi.com/marketing/v3/emails`,
@@ -93,7 +96,10 @@ const addEmail = async (req, res) => {
 
 const deleteEmail = async (req, res) => {
   const accessToken = tokenCache.get(ACCESS_SECRET);
-  if (!accessToken) await refreshAccessToken();
+  if (!accessToken) {
+    console.log("expired");
+    return res.redirect(`${REDIRECT_URI}/refresh`);
+  }
   try {
     const response = await axios.delete(
       `https://api.hubapi.com/marketing/v3/emails/${req.params.id}`,
@@ -120,7 +126,10 @@ const deleteEmail = async (req, res) => {
 
 const editEmail = async (req, res) => {
   const accessToken = tokenCache.get(ACCESS_SECRET);
-  if (!accessToken) await refreshAccessToken();
+  if (!accessToken) {
+    console.log("expired");
+    return res.redirect(`${REDIRECT_URI}/refresh`);
+  }
   try {
     const response = await axios.patch(
       `https://api.hubapi.com/marketing/v3/emails/${req.params.id}`,
