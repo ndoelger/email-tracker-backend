@@ -1,5 +1,12 @@
 ![Logo](https://1000logos.net/wp-content/uploads/2022/12/HubSpot-Logo.png)
 
+![Badge](https://img.shields.io/badge/axios-671ddf?&style=for-the-badge&logo=axios&logoColor=white)
+![Badge](https://img.shields.io/badge/Express%20js-000000?style=for-the-badge&logo=express&logoColor=white)
+![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)
+![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma-3982CE?style=for-the-badge&logo=Prisma&logoColor=white)
+
+
 # HubSpot Email Tracker
 
 Welcome to The Email Tracker! You can use this app for a simple way to create and edit your HubSpot email titles, subjects, and previews. It’s great for efficient content editing, not needed to go into every email to update the SL/PV manually.
