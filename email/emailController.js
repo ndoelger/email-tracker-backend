@@ -9,7 +9,7 @@ const getEmails = async (req, res) => {
       `https://api.hubapi.com/marketing/v3/emails`,
       {
         headers: {
-          Authorization: `Bearer COjR_aH3MRIHAgGAQAAAARil0PcVIMzO2x8olK3KATIUj5kJmRf5BtaKs76-_q7LpSYELPc6UAAgAEH_BwAAAACAAABgeMAkgAAAIAAAAAQAADgAAADAw_8BAQAAAIAHAAAAAAAQAgAAAAAAAAAAAAACAAi4AgAAAAAAAAAAAAAAAAAAAABAQhSSZ5FuMNgwLwsN3ocIpWz5nAL2fkoDbmExUgBaAGAA`,
+          Authorization: `Bearer CNCb6qP3MRIHAgGAQAAAARil0PcVIMzO2x8olK3KATIUgjhTEh21G_GjV2febwssOT6vlMI6UAAgAEH_BwAAAACAAABgeMAkgAAAIAAAAAQAADgAAADAw_8BAQAAAIAHAAAAAAAQAgAAAAAAAAAAAAACAAi4AgAAAAAAAAAAAAAAAAAAAABAQhRZdRQ0qO979fsFHlN7cPme04A9aEoDbmExUgBaAGAA`,
           "Content-Type": "application/json",
         },
       }
@@ -59,7 +59,7 @@ const addEmail = async (req, res) => {
       },
       {
         headers: {
-          Authorization: `Bearer COjR_aH3MRIHAgGAQAAAARil0PcVIMzO2x8olK3KATIUj5kJmRf5BtaKs76-_q7LpSYELPc6UAAgAEH_BwAAAACAAABgeMAkgAAAIAAAAAQAADgAAADAw_8BAQAAAIAHAAAAAAAQAgAAAAAAAAAAAAACAAi4AgAAAAAAAAAAAAAAAAAAAABAQhSSZ5FuMNgwLwsN3ocIpWz5nAL2fkoDbmExUgBaAGAA`,
+          Authorization: `Bearer CNCb6qP3MRIHAgGAQAAAARil0PcVIMzO2x8olK3KATIUgjhTEh21G_GjV2febwssOT6vlMI6UAAgAEH_BwAAAACAAABgeMAkgAAAIAAAAAQAADgAAADAw_8BAQAAAIAHAAAAAAAQAgAAAAAAAAAAAAACAAi4AgAAAAAAAAAAAAAAAAAAAABAQhRZdRQ0qO979fsFHlN7cPme04A9aEoDbmExUgBaAGAA`,
           "Content-Type": "application/json",
         },
       }
@@ -91,7 +91,7 @@ const deleteEmail = async (req, res) => {
       `https://api.hubapi.com/marketing/v3/emails/${req.params.id}`,
       {
         headers: {
-          Authorization: `Bearer COjR_aH3MRIHAgGAQAAAARil0PcVIMzO2x8olK3KATIUj5kJmRf5BtaKs76-_q7LpSYELPc6UAAgAEH_BwAAAACAAABgeMAkgAAAIAAAAAQAADgAAADAw_8BAQAAAIAHAAAAAAAQAgAAAAAAAAAAAAACAAi4AgAAAAAAAAAAAAAAAAAAAABAQhSSZ5FuMNgwLwsN3ocIpWz5nAL2fkoDbmExUgBaAGAA`,
+          Authorization: `Bearer CNCb6qP3MRIHAgGAQAAAARil0PcVIMzO2x8olK3KATIUgjhTEh21G_GjV2febwssOT6vlMI6UAAgAEH_BwAAAACAAABgeMAkgAAAIAAAAAQAADgAAADAw_8BAQAAAIAHAAAAAAAQAgAAAAAAAAAAAAACAAi4AgAAAAAAAAAAAAAAAAAAAABAQhRZdRQ0qO979fsFHlN7cPme04A9aEoDbmExUgBaAGAA`,
           "Content-Type": "application/json",
         },
       }
@@ -110,8 +110,55 @@ const deleteEmail = async (req, res) => {
   }
 };
 
+const editEmail = async (req, res) => {
+  try {
+    console.log(req.body.payload.preview);
+    const response = await axios.patch(
+      `https://api.hubapi.com/marketing/v3/emails/${req.params.id}`,
+      {
+        content: {
+          widgets: {
+            preview_text: {
+              body: {
+                value: req.body.payload.preview,
+              },
+            },
+          },
+        },
+        name: req.body.payload.name,
+        subject: req.body.payload.subject,
+      },
+      {
+        headers: {
+          Authorization: `Bearer CNCb6qP3MRIHAgGAQAAAARil0PcVIMzO2x8olK3KATIUgjhTEh21G_GjV2febwssOT6vlMI6UAAgAEH_BwAAAACAAABgeMAkgAAAIAAAAAQAADgAAADAw_8BAQAAAIAHAAAAAAAQAgAAAAAAAAAAAAACAAi4AgAAAAAAAAAAAAAAAAAAAABAQhRZdRQ0qO979fsFHlN7cPme04A9aEoDbmExUgBaAGAA`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const emailData = {
+      name: response.data.name,
+      subject: response.data.subject,
+      preview: response.data.content.widgets.preview_text.body.value,
+    };
+
+    await prisma.email.update({
+      where: {
+        id: req.params.id,
+      },
+      data: emailData,
+    });
+
+    res.json(response.data);
+  } catch (error) {
+    console.error("Error:", error.response ? error.response.data : error);
+    res.status(500).json({ error: "Failed to fetch contacts" }); // Send error response  }
+  }
+};
+
 module.exports = {
   getEmails,
   addEmail,
   deleteEmail,
+  editEmail,
 };
