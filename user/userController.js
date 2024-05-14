@@ -60,7 +60,7 @@ const exchangeForTokens = async (form) => {
 
     console.log("SETTING/RESETTING ACCESS AND REFRESH TOKENS IN BACKEND CACHE");
 
-    tokenCache.set(ACCESS_SECRET, accessToken, 5);
+    tokenCache.set(ACCESS_SECRET, accessToken, expires_in * 0.75);
     tokenCache.set(REFRESH_SECRET, refreshToken);
 
     console.log("ADDING/UPDATING TOKENS IN DATABASE");
