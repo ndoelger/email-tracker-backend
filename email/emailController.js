@@ -298,7 +298,6 @@ const addEmail = async (req, res) => {
         },
         name: req.body.payload.name,
         subject: req.body.payload.subject,
-        publishDate: new Date("2024-05-14T03:56:55.897Z"),
         from: {
           fromName: "Nic Doelger",
           replyTo: "doelgern@gmail.com",
