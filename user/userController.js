@@ -15,10 +15,10 @@ const SCOPES = process.env.SCOPES;
 const getUrl = (req, res) => {
   console.log("FETCHING AUTHENTICATION FOR FRONTEND");
   const authUrl =
-    `https://app.hubspot.com/oauth/authorize?` +
-    `client_id=${encodeURIComponent(CLIENT_ID)}&` +
-    `scope=${encodeURIComponent(SCOPES)}&` +
-    `redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;
+  `https://app.hubspot.com/oauth/authorize?` +
+  `client_id=${encodeURIComponent(CLIENT_ID)}&` +
+  `scope=${encodeURIComponent(SCOPES)}&` +
+  `redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;
 
   res.json({ authUrl });
 };
@@ -28,7 +28,7 @@ const getAccessToken = async (req, res) => {
   console.log("RECEIVED AUTHORIZATION CODE, NOW EXCHANGING FOR TOKENS");
   const accessParams = new URLSearchParams({
     grant_type: "authorization_code",
-    client_id: CLIENT_ID,
+    client_id: CLIENT_ID, 
     client_secret: CLIENT_SECRET,
     redirect_uri: REDIRECT_URI,
     code: req.query.code,
